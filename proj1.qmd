@@ -1,0 +1,74 @@
+---
+title: "Project"
+author: "Madhu"
+format: html
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this 
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+## Part 1: Data Processing
+
+Write a function to GET() the URL, parse the JSON, and pull out a list of the variables with their values. (BaseR list manipulations is the easiest way to go here!)
+
+
+```{r}
+library(httr)
+library(jsonlite)
+library(tidyverse)
+
+
+obtain_url_info <- function(url){
+  output <- GET(url)
+  parsed <- fromJSON(rawToChar(output$content))$variables
+  
+  new_df <- data.frame(
+    AGEP = parsed$AGEP,
+    GASP = parsed$GASP,
+    GRPIP = parsed$GRPIP, 
+    JWAP = parsed$JWAP, 
+    JWDP = parsed$JWDP, 
+    JWMNP = parsed$JWMNP, 
+    PWGTP = parsed$PWGTP, 
+    FER = parsed$FER, 
+    HHL = parsed$HHL, 
+    SCH = parsed$SCH, 
+    SCHL = parsed$SCHL, 
+    SEX = parsed$SEX, 
+#    ST = parsed$ (for 2021, 2022) / STATE (for 2023, 2024), 
+    REGION = parsed$REGION, 
+    DIVISION = parsed$DIVISION
+  )
+
+}
+```
+
+```{r}
+result <- obtain_url_info("https://api.census.gov/data/2021/acs/acs1/pums/variables.json")
+result
+```
+
+
+```{r}
+https://api.census.gov/data/2021/acs/acs1/pums/variables.json
+https://api.census.gov/data/2022/acs/acs1/pums/variables.json
+```
+
