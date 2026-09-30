@@ -1,31 +1,12 @@
 ---
-title: "Project"
+title: "Project 1"
 author: "Madhu"
 format: html
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
-```
-
-You can add options to executable code like this 
-
-```{r}
-#| echo: false
-2 * 2
-```
-
-The `echo: false` option disables the printing of code (only output is displayed).
-
 ## Part 1: Data Processing
+
+# Parsing Variable Values
 
 Write a function to GET() the URL, parse the JSON, and pull out a list of the variables with their values. (BaseR list manipulations is the easiest way to go here!)
 
@@ -34,41 +15,62 @@ Write a function to GET() the URL, parse the JSON, and pull out a list of the va
 library(httr)
 library(jsonlite)
 library(tidyverse)
+```
 
-
-obtain_url_info <- function(url){
-  output <- GET(url)
-  parsed <- fromJSON(rawToChar(output$content))$variables
+```{r}
+obtain_url_info <- function(url) {
   
-  new_df <- data.frame(
-    AGEP = parsed$AGEP,
-    GASP = parsed$GASP,
-    GRPIP = parsed$GRPIP, 
-    JWAP = parsed$JWAP, 
-    JWDP = parsed$JWDP, 
-    JWMNP = parsed$JWMNP, 
-    PWGTP = parsed$PWGTP, 
-    FER = parsed$FER, 
-    HHL = parsed$HHL, 
-    SCH = parsed$SCH, 
-    SCHL = parsed$SCHL, 
-    SEX = parsed$SEX, 
-#    ST = parsed$ (for 2021, 2022) / STATE (for 2023, 2024), 
-    REGION = parsed$REGION, 
-    DIVISION = parsed$DIVISION
+  year <- str_extract(url, "20\\d{2}")
+  
+  output <- GET(url)                                        #GET() the URL
+  parsed <- fromJSON(rawToChar(output$content))$variables   #parse the JSON
+  
+  if (year %in% c("2021", "2022")) {
+    parsed$STATE <- parsed$ST
+  }
+  
+  vars <- c(                                                #pull out list of the variables
+    "AGEP", "GASP", "GRPIP", "JWAP", "JWDP", "JWMNP",
+    "PWGTP", "FER", "HHL", "SCH", "SCHL", "SEX",
+    "STATE", "REGION", "DIVISION"
   )
-
+  
+  parsed[vars]
 }
 ```
 
+Obtain one list for each year
+
 ```{r}
-result <- obtain_url_info("https://api.census.gov/data/2021/acs/acs1/pums/variables.json")
-result
+result_21 <- obtain_url_info("https://api.census.gov/data/2021/acs/acs1/pums/variables.json")
+result_22 <- obtain_url_info("https://api.census.gov/data/2022/acs/acs1/pums/variables.json")
+result_23 <- obtain_url_info("https://api.census.gov/data/2023/acs/acs1/pums/variables.json")
+result_24 <- obtain_url_info("https://api.census.gov/data/2024/acs/acs1/pums/variables.json")
+```
+
+Save the lists in an .rds file. Save this .rds file in your repo under a data folder
+
+```{r}
+
+var_desc <- list(
+  yr_21 = result_21,
+  yr_22 = result_22,
+  yr_23 = result_23,
+  yr_24 = result_24
+)
+
+saveRDS(var_desc, "data/variable_description.rds")
+
 ```
 
 
+# Parsing API Data
+
 ```{r}
-https://api.census.gov/data/2021/acs/acs1/pums/variables.json
-https://api.census.gov/data/2022/acs/acs1/pums/variables.json
+api <- Sys.getenv("API_KEY")
+
 ```
+
+
+
 
