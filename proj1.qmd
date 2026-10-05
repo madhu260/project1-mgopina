@@ -10,7 +10,6 @@ format: html
 
 Write a function to GET() the URL, parse the JSON, and pull out a list of the variables with their values. (BaseR list manipulations is the easiest way to go here!)
 
-
 ```{r}
 library(httr)
 library(jsonlite)
@@ -48,7 +47,7 @@ result_23 <- obtain_url_info("https://api.census.gov/data/2023/acs/acs1/pums/var
 result_24 <- obtain_url_info("https://api.census.gov/data/2024/acs/acs1/pums/variables.json")
 ```
 
-Save the lists in an .rds file. Save this .rds file in your repo under a data folder
+I saved the lists in an .rds file, and it is in my repo under the data folder
 
 ```{r}
 
@@ -63,14 +62,68 @@ saveRDS(var_desc, "data/variable_description.rds")
 
 ```
 
-
 # Parsing API Data
 
+First I get my regular URL query to work
 ```{r}
 api <- Sys.getenv("API_KEY")
 
+response <- GET(
+  "https://api.census.gov/data/2024/acs/acs1/pums",
+  query = list(
+    get = "AGEP,GASP,GRPIP,JWAP,JWDP,JWMNP,PWGTP",
+    `for` = "state:37",
+    key = api
+  )
+)
+response
+str(response)
+
+```
+
+This URL query will be converted into a readable format by inserting it into the helper function below
+```{r}
+#| warning: false
+helper_response_to_tibble <- function(url_response){
+  
+  parsed_data <- fromJSON(rawToChar(url_response$content))
+  
+  column_names <- parsed_data[1, ] #first row has col names
+  parsed_data <- parsed_data[-1, , drop = FALSE]
+  colnames(parsed_data) <- column_names
+  tibble_data <- as_tibble(parsed_data)
+  
+  tibble_data
+}
+
+helper_response_to_tibble(response)
+```
+
+Lets incorporate this helper into a function that accomplishes multiple goals 
+```{r}
+query_API <- function(year = 2024, num_vars = "AGEP,PWGTP", cat_vars="SEX", geo_level="State", geo_specific="37"){
+  
+  #Query URL
+  
+  #if else conditions check
+    #year = 2021, 22, 23, 24
+    #PWGTP always returned + at least numeric_var (AGEP, GASP, GRPIP, JWAP (time), JWDP (time), and JWMNP)
+    #at least one cat_var =  FER, HHL, SCH, SCHL, and SEX
+    #geo_level = state, region, division
+    #
+  
+  
+  #parse data as tibble
+  
+  result <- helper_response_to_tibble(response)
+  class(result) <- c("census", class(result))
+  
+}
 ```
 
 
+```{r}
 
+
+```
 
