@@ -101,17 +101,50 @@ helper_response_to_tibble(response)
 
 Lets incorporate this helper into a function that accomplishes multiple goals 
 ```{r}
-query_API <- function(year = 2024, num_vars = "AGEP,PWGTP", cat_vars="SEX", geo_level="State", geo_specific="37"){
-  
-  #Query URL
+query_API <- function(year = 2024, num_vars = c("AGEP","PWGTP"), cat_vars="SEX", geo_level="State", geo_specific="37"){
   
   #if else conditions check
-    #year = 2021, 22, 23, 24
-    #PWGTP always returned + at least numeric_var (AGEP, GASP, GRPIP, JWAP (time), JWDP (time), and JWMNP)
-    #at least one cat_var =  FER, HHL, SCH, SCHL, and SEX
-    #geo_level = state, region, division
-    #
   
+  #year = 2021, 22, 23, 24
+  if (is.null(year) || !(year %in% 2021:2024)){
+    stop("invalid year argument")
+  }
+  #PWGTP always returned + at least numeric_var (JWAP (time), JWDP (time))
+  num_var_options <- c("AGEP", "GASP", "GRPIP", "JWAP", "JWDP" , "JWMNP", "PWGTP")
+  
+  if(!"PWGTP" %in% num_vars){
+    if(length(num_vars) < 1){
+      stop("need to provide a numeric argument")
+    }
+    num_vars <- c(num_vars, "PWGTP")
+  } else if(length(num_vars) == 1){
+      stop("need to provide at least one numeric argument apart from PWGTP")
+  }
+  
+  #check if numeric var is right
+  if(!num_vars %in% num_var_options){
+    stop("invalid numeric argument")
+  }
+  
+  #at least one cat_var =  FER, HHL, SCH, SCHL, and SEX
+  cat_var_options <- c("FER", "HHL", "SCH", "SCHL", "SEX")
+  
+  if(is.null(cat_vars) || length(cat_vars)==0 ){
+      stop("need to provide a categorical argument")
+  }
+  if(!cat_vars %in% cat_var_options){
+    stop("invalid categorical argument")
+  }
+  
+  #geo_level = state, region, division
+  if(is.null(geo_level) || length(geo_level)!=1 || geo_level == "All" || !geo_level %in% c("State", "Region", "Division") ){
+    stop("invalid geo level, only options are State, Region, Division")
+  }
+  #
+  
+  
+  #Query URL
+
   
   #parse data as tibble
   
@@ -119,11 +152,5 @@ query_API <- function(year = 2024, num_vars = "AGEP,PWGTP", cat_vars="SEX", geo_
   class(result) <- c("census", class(result))
   
 }
-```
-
-
-```{r}
-
-
 ```
 
