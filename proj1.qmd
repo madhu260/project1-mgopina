@@ -14,6 +14,7 @@ Write a function to GET() the URL, parse the JSON, and pull out a list of the va
 library(httr)
 library(jsonlite)
 library(tidyverse)
+library(hms)
 ```
 
 ```{r}
@@ -99,6 +100,100 @@ helper_response_to_tibble <- function(url_response){
 helper_response_to_tibble(response)
 ```
 
+This helper function is to fix the data types: either to numeric, or make them a factor with appropriate labels
+
+```{r}
+helper_parse_time <- function(codes, time_map) {
+
+  # Find the midpoint of one interval label
+  midpoint <- function(label) {
+
+    endpoints <- strsplit(label, " to ", fixed = TRUE)[[1]]
+    if (length(endpoints) != 2L) {
+      return(NA_real_)
+    }
+
+    endpoints <- toupper(gsub("\\.", "", endpoints))                            # Change "7:15 a.m." into "7:15 AM"
+
+    times <- strptime(
+      endpoints,
+      format = "%I:%M %p",
+      tz = "UTC"
+    )
+
+    seconds <- times$hour * 3600 + times$min * 60
+
+    if (anyNA(seconds)) {
+      return(NA_real_)
+    }
+
+    # Handle an interval crossing midnight
+    if (seconds[2] < seconds[1]) {
+      seconds[2] <- seconds[2] + 86400
+    }
+
+    return(mean(seconds) %% 86400)
+  }
+
+  # Calculate the midpoint for each possible code
+  midpoint_values <- vapply(
+    unname(time_map),
+    midpoint,
+    numeric(1)
+  )
+
+  # Match the observations to their codes
+  # Numeric matching makes "046" and "46" equivalent
+  positions <- match(
+    as.numeric(codes),
+    as.numeric(names(time_map))
+  )
+
+  return(hms::as_hms(unname(midpoint_values[positions])))
+}
+
+```
+
+
+```{r}
+helper_data_types <- function(df, year) {
+
+  num_var <- c("AGEP", "GASP", "GRPIP", "JWMNP", "PWGTP")
+  cat_var <- c("FER", "HHL", "SCH", "SCHL", "SEX")
+
+  variables <- colnames(df)
+
+  for (x in variables) {
+
+    if (x %in% num_var) {
+      df[[x]] <- as.numeric(df[[x]])
+    
+    } else if (x %in% cat_var) {
+
+      value_map <- unlist(year[[x]]$values$item)
+      value_map <- value_map[
+        order(as.numeric(names(value_map)))
+      ]
+
+      df[[x]] <- factor(
+        as.numeric(df[[x]]),
+        levels = as.numeric(names(value_map)),
+        labels = unname(value_map)
+      )
+    } else if (x %in% c("JWAP", "JWDP")) {
+      
+        time_map <- unlist(year[[x]]$values$item)
+        df[[x]] <- helper_parse_time(df[[x]], time_map)
+    }
+    
+  }
+
+  return(df)
+}
+
+```
+
+
 ```{r}
 helper_geo_value_validate <- function(geo_specific, geo_map) {
 
@@ -126,7 +221,6 @@ helper_geo_value_validate <- function(geo_specific, geo_map) {
   return(paste(unique(geo_specific), collapse = ","))
 }
 ```
-
 
 
 Lets incorporate our helpers into a function that accomplishes multiple goals 
@@ -224,11 +318,14 @@ query_API <- function(year = 2024,
   }
 
   #----------------------------- Parse data as tibble -----------------------------
-  result <- helper_response_to_tibble(response)
+  result <- response |> 
+    helper_response_to_tibble()|>
+    helper_data_types(year_info)
+  
   class(result) <- c("census", class(result))
+  
+  return(result)
   
 }
 ```
-
-
 
