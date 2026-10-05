@@ -198,7 +198,7 @@ helper_data_types <- function(df, year) {
 helper_geo_value_validate <- function(geo_specific, geo_map) {
 
   geo_map <- geo_map[!grepl("Puerto Rico", geo_map, fixed = TRUE)]
-
+ 
   if (!(is.character(geo_specific) || is.numeric(geo_specific)) ||
       length(geo_specific) == 0L ||
       anyNA(geo_specific)) {
@@ -243,7 +243,7 @@ query_API <- function(year = 2024,
   #Numeric var
   num_var_options <- c("AGEP", "GASP", "GRPIP", "JWAP", "JWDP" , "JWMNP", "PWGTP")
   
-  if(!"PWGTP" %in% num_vars){                                                   #PWGTP always returned
+  if(!"PWGTP" %in% num_vars){                                                   # PWGTP always returned
     if(length(num_vars) < 1){
       stop("need to provide a numeric argument")
     }
@@ -280,7 +280,7 @@ query_API <- function(year = 2024,
   descriptions <- readRDS("data/variable_description.rds")
   year_name <- paste0(
     "yr_",
-    substr(as.character(year), 3, 4)                                            #select relevant yr
+    substr(as.character(year), 3, 4)                                            # select relevant yr
   )
   
   year_info <- descriptions[[year_name]]
@@ -327,5 +327,45 @@ query_API <- function(year = 2024,
   return(result)
   
 }
+```
+
+Combining Years
+
+```{r}
+
+query_mult_years_API <- function(input_years, ...){
+  years <- unique(input_years)
+
+  if (length(years) < 1L || !all(years %in% 2021:2024)) {
+    stop("years must be a subset of 2021, 2022, 2023, 2024")
+  }
+
+  combined <- tibble()
+
+  for (x in years) {
+    df <- query_API(year = x, ...)                                              # one year at a time
+    class(df) <- setdiff(class(df), "census")
+    df$year <- x                                                                # add the year column
+    combined <- bind_rows(combined, df)
+  }
+
+  combined$year <- factor(combined$year, levels = sort(years))                  # factorize year
+  class(combined) <- c("census", class(combined))
+  combined
+  
+}
+```
+
+```{r}
+combined_data <- query_mult_years_API(
+  input_years = c(2021, 2023, 2024),
+  num_vars = c("GASP", "PWGTP"),
+  cat_vars = c("HHL", "SCHL"),
+  geo_level = "State",
+  geo_specific = "32"
+)
+
+head(combined_data)
+str(combined_data)
 ```
 
