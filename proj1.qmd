@@ -101,18 +101,25 @@ helper_response_to_tibble(response)
 
 Lets incorporate this helper into a function that accomplishes multiple goals 
 ```{r}
-query_API <- function(year = 2024, num_vars = c("AGEP","PWGTP"), cat_vars="SEX", geo_level="State", geo_specific="37"){
+query_API <- function(year = 2024, 
+                      num_vars = c("AGEP","PWGTP"), cat_vars="SEX", 
+                      geo_level="State", geo_specific=NULL){
   
-  #if else conditions check
+  #--------------------------- if else conditions check ---------------------------
   
-  #year = 2021, 22, 23, 24
-  if (is.null(year) || !(year %in% 2021:2024)){
+  if(anyNA(c(year, num_vars, cat_vars, geo_level))){
+    stop("NA error in arguments")
+  }
+  
+  #Year
+  if (is.null(year) || !(year %in% 2021:2024) || length(year) != 1L){
     stop("invalid year argument")
   }
-  #PWGTP always returned + at least numeric_var (JWAP (time), JWDP (time))
+  
+  #Numeric var
   num_var_options <- c("AGEP", "GASP", "GRPIP", "JWAP", "JWDP" , "JWMNP", "PWGTP")
   
-  if(!"PWGTP" %in% num_vars){
+  if(!"PWGTP" %in% num_vars){                                                   #PWGTP always returned
     if(length(num_vars) < 1){
       stop("need to provide a numeric argument")
     }
@@ -121,33 +128,77 @@ query_API <- function(year = 2024, num_vars = c("AGEP","PWGTP"), cat_vars="SEX",
       stop("need to provide at least one numeric argument apart from PWGTP")
   }
   
-  #check if numeric var is right
-  if(!num_vars %in% num_var_options){
+  if(!all(num_vars %in% num_var_options)){
     stop("invalid numeric argument")
   }
   
-  #at least one cat_var =  FER, HHL, SCH, SCHL, and SEX
+  #Categorical variables
   cat_var_options <- c("FER", "HHL", "SCH", "SCHL", "SEX")
   
   if(is.null(cat_vars) || length(cat_vars)==0 ){
       stop("need to provide a categorical argument")
   }
-  if(!cat_vars %in% cat_var_options){
+  if(!all(cat_vars %in% cat_var_options)){
     stop("invalid categorical argument")
   }
   
-  #geo_level = state, region, division
-  if(is.null(geo_level) || length(geo_level)!=1 || geo_level == "All" || !geo_level %in% c("State", "Region", "Division") ){
-    stop("invalid geo level, only options are State, Region, Division")
+  #Geography level
+  if(is.null(geo_level) || length(geo_level)!=1 || geo_level == "All" 
+     || !(tolower(geo_level) %in% c("region", "division", "state"))){
+    stop("invalid geo level, choose only one option from State, Region, Division")
   }
-  #
   
+  geo_level <- tolower(geo_level)
   
-  #Query URL
+  #Geography Specific
+  if(!is.null(geo_specific)){
+    #write validation check stuff---------------------------------------------
+    stop()
+  }else{
+    if(geo_level == "state"){
+      geo_specific == 37
+    }else if(geo_level == "region"){
+      geo_specific == 27
+    }else if(geo_level == "division"){
+      geo_specific == 27
+    }
+  }
+  
+  #------------------- Read the appropriate year's descriptions -------------------
+  descriptions <- readRDS("data/variable_description.rds")
+  
+  year_name <- paste0(                                                          #made life difficult on purpose clearly
+    "yr_",
+    substr(as.character(year), 3, 4)                                            #select relevant yr
+  )
+  
+  year_info <- descriptions[[year_name]]
+  
+  if (is.null(year_info)) {
+    stop("The saved descriptions do not contain this year.")
+  }
+  
+  geo_map <- unlist(
+    year_info[[toupper(geo_level)]]$values$item
+  )
 
   
-  #parse data as tibble
+  #---------------------------------- Query URL -----------------------------------
+  response <- GET(
+    paste0("https://api.census.gov/data/",
+           year,
+           "/acs/acs1/pums?get=",
+           paste(c(num_vars, cat_vars), collapse = ","),
+           "&for=", geo_level, ":",geo_specific,
+           "&key=", api
+           )
+    )
   
+  if(response$status_code != 200){
+    stop("query status error")
+  }
+
+  #----------------------------- Parse data as tibble -----------------------------
   result <- helper_response_to_tibble(response)
   class(result) <- c("census", class(result))
   
