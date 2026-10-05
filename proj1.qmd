@@ -99,7 +99,37 @@ helper_response_to_tibble <- function(url_response){
 helper_response_to_tibble(response)
 ```
 
-Lets incorporate this helper into a function that accomplishes multiple goals 
+```{r}
+helper_geo_value_validate <- function(geo_specific, geo_map) {
+
+  geo_map <- geo_map[!grepl("Puerto Rico", geo_map, fixed = TRUE)]
+
+  if (!(is.character(geo_specific) || is.numeric(geo_specific)) ||
+      length(geo_specific) == 0L ||
+      anyNA(geo_specific)) {
+    stop("Provide valid geography codes or 'all'.")
+  }
+
+  geo_specific <- as.character(geo_specific)
+
+  if (length(geo_specific) == 1L &&
+      tolower(geo_specific) == "all") {
+
+    geo_specific <- names(geo_map)
+
+  } else if (!all(geo_specific %in% names(geo_map))) {
+
+    stop("Invalid code for the selected geography level.")
+
+  }
+
+  return(paste(unique(geo_specific), collapse = ","))
+}
+```
+
+
+
+Lets incorporate our helpers into a function that accomplishes multiple goals 
 ```{r}
 query_API <- function(year = 2024, 
                       num_vars = c("AGEP","PWGTP"), cat_vars="SEX", 
@@ -150,37 +180,32 @@ query_API <- function(year = 2024,
   
   geo_level <- tolower(geo_level)
   
+  
   #Geography Specific
-  if(!is.null(geo_specific)){
-    #write validation check stuff---------------------------------------------
-    stop()
-  }else{
-    if(geo_level == "state"){
-      geo_specific == 37
-    }else if(geo_level == "region"){
-      geo_specific == 27
-    }else if(geo_level == "division"){
-      geo_specific == 27
-    }
-  }
   
-  #------------------- Read the appropriate year's descriptions -------------------
   descriptions <- readRDS("data/variable_description.rds")
-  
-  year_name <- paste0(                                                          #made life difficult on purpose clearly
+  year_name <- paste0(
     "yr_",
     substr(as.character(year), 3, 4)                                            #select relevant yr
   )
   
   year_info <- descriptions[[year_name]]
   
-  if (is.null(year_info)) {
-    stop("The saved descriptions do not contain this year.")
-  }
-  
   geo_map <- unlist(
     year_info[[toupper(geo_level)]]$values$item
   )
+  
+  if(is.null(geo_specific)){
+    if(geo_level == "state"){
+      geo_specific <- 37
+    }else if(geo_level == "region"){
+      geo_specific <- 3
+    }else if(geo_level == "division"){
+      geo_specific <- 3
+    }
+  }
+  
+  geo_specific <- helper_geo_value_validate(geo_specific, geo_map)
 
   
   #---------------------------------- Query URL -----------------------------------
@@ -204,4 +229,6 @@ query_API <- function(year = 2024,
   
 }
 ```
+
+
 
