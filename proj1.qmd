@@ -461,47 +461,49 @@ dat <- query_API_multi(2023:2024, num_vars = c("AGEP", "JWMNP", "JWAP"),
 
 ```{r}
 library(tidyverse)
-library(gt)
 
-# Helper: nicely formatted count table for one categorical variable.
-# df is one element of summary(dat)$categorical (first column = the variable,
-# second column = count). Uses only gt functions from the course notes.
-count_table <- function(df, title) {
-  df |>
-    gt() |>
-    tab_header(title = title) |>
-    cols_label(count = "Count") |>
-    sub_missing(columns = everything(), missing_text = "Missing") |>
-    tab_options(table.width = pct(80)) |>
-    opt_stylize(style = 1, color = "blue")
+plot.census <- function(x, cat_var, num_var) {
+
+  class(x) <- setdiff(class(x), "census")                         #same reason as numeric summary
+
+  # Check inputs
+  if (length(cat_var) != 1L || length(num_var) != 1L) {
+    stop("Specify exactly one categorical variable and one numeric variable")
+  }
+  if (!all(c(cat_var, num_var) %in% names(x))) {
+    stop("cat_var and num_var must be columns of the census tibble")
+  }
+  if (!is.numeric(x[[num_var]]) || num_var == "PWGTP") {
+    stop("num_var must be a numeric variable other than PWGTP (time variables are not supported)")
+  }
+  if (!(is.factor(x[[cat_var]]) || is.character(x[[cat_var]]))) {
+    stop("cat_var must be a categorical (factor or character) variable")
+  }
+
+  # Base object: drop rows missing either variable, weight each row by PWGTP
+  g <- ggplot(x |> drop_na(all_of(c(cat_var, num_var))),
+              aes(x = get(cat_var), y = get(num_var),
+                  weight = PWGTP, fill = get(cat_var)))
+
+  # Boxplot layer plus labels (the legend would just repeat the x-axis)
+  g +
+    geom_boxplot() +
+    labs(x = cat_var, y = num_var) +
+    theme(legend.position = "none")
 }
-
-res <- summary(dat)
-
-# Numeric summaries: spanners group each variable's mean and sd
-res$numeric |>
-  mutate(across(everything(), ~ round(.x, 2))) |>
-  gt() |>
-  tab_header(
-    title = "Weighted Numeric Summaries",
-    subtitle = "2023 and 2024 survey years, North Carolina"
-  ) |>
-  cols_label(
-    mean_AGEP = "Mean", sd_AGEP = "SD",
-    mean_JWMNP = "Mean", sd_JWMNP = "SD"
-  ) |>
-  tab_spanner(label = "Age (AGEP)", columns = c(mean_AGEP, sd_AGEP)) |>
-  tab_spanner(label = "Commute Minutes (JWMNP)", columns = c(mean_JWMNP, sd_JWMNP)) |>
-  tab_options(table.width = pct(80)) |>
-  opt_stylize(style = 1, color = "blue")
-
-# Categorical counts
-count_table(res$categorical$SEX, "Counts by Sex")
-count_table(res$categorical$SCHL, "Counts by Educational Attainment")
-count_table(res$categorical$year, "Counts by Survey Year")
 ```
 
 
 ```{r}
+# Examples (dat comes from query_API_multi):
+dat <- query_API_multi(2023:2024, num_vars = c("AGEP", "JWMNP"),
+                       cat_vars = c("SEX", "SCHL"))
+
+ plot(dat, cat_var = "SEX", num_var = "AGEP")
+ plot(dat, cat_var = "year", num_var = "JWMNP")
+ plot(dat, cat_var = "SCHL", num_var = "AGEP") +
+   theme(axis.text.x = element_text(angle = 45, hjust = 1))   # long labels
+ plot(dat, cat_var = "SEX", num_var = "AGEP") + theme_light()  # a course theme
 
 ```
+
