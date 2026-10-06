@@ -238,7 +238,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>response</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Response [https://api.census.gov/data/2024/acs/acs1/pums?get=AGEP%2CGASP%2CGRPIP%2CJWAP%2CJWDP%2CJWMNP%2CPWGTP&amp;for=state%3A37&amp;key=1348faf156b7a097f231193d4f8b704b551a179b]
-  Date: 2026-10-06 06:04
+  Date: 2026-10-06 06:23
   Status: 200
   Content-Type: application/json;charset=utf-8
   Size: 4.6 MB
@@ -268,7 +268,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   ..$ content-security-policy     : chr "default-src 'self'; img-src 'self' data:; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self"| __truncated__
   ..$ x-content-type-options      : chr "nosniff"
   ..$ content-type                : chr "application/json;charset=utf-8"
-  ..$ date                        : chr "Tue, 06 Oct 2026 06:04:37 GMT"
+  ..$ date                        : chr "Tue, 06 Oct 2026 06:23:55 GMT"
   ..$ strict-transport-security   : chr "max-age=31536000"
   ..$ transfer-encoding           : chr "chunked"
   ..- attr(*, "class")= chr [1:2] "insensitive" "list"
@@ -285,7 +285,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   .. .. ..$ content-security-policy     : chr "default-src 'self'; img-src 'self' data:; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self"| __truncated__
   .. .. ..$ x-content-type-options      : chr "nosniff"
   .. .. ..$ content-type                : chr "application/json;charset=utf-8"
-  .. .. ..$ date                        : chr "Tue, 06 Oct 2026 06:04:37 GMT"
+  .. .. ..$ date                        : chr "Tue, 06 Oct 2026 06:23:55 GMT"
   .. .. ..$ strict-transport-security   : chr "max-age=31536000"
   .. .. ..$ transfer-encoding           : chr "chunked"
   .. .. ..- attr(*, "class")= chr [1:2] "insensitive" "list"
@@ -296,10 +296,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   ..$ secure    : logi TRUE
   ..$ expiration: POSIXct[1:1], format: "Inf"
   ..$ name      : chr "TS010383f0"
-  ..$ value     : chr "01283c52a40eabbf1e43b430877f00ceac9c21273d7c2c143c8f80dde047456d1bfd9bc8575ca2a5aa8ec0d699b0821a14e96c63c0"
+  ..$ value     : chr "01283c52a43c331f716b274458a9608936b22bbe227859a47ecfa80fdd240a9b7b3017c7c5de1178bd6e3b1fcb807f209c1ebd919c"
  $ content    : raw [1:4599120] 5b 5b 22 41 ...
- $ date       : POSIXct[1:1], format: "2026-10-06 06:04:37"
- $ times      : Named num [1:6] 0 0.000089 0 0.000304 0.790965 ...
+ $ date       : POSIXct[1:1], format: "2026-10-06 06:23:55"
+ $ times      : Named num [1:6] 0 0.000104 0 0.00024 1.171387 ...
   ..- attr(*, "names")= chr [1:6] "redirect" "namelookup" "connect" "pretransfer" ...
  $ request    :List of 7
   ..$ method    : chr "GET"
@@ -910,9 +910,6 @@ sd_JWMNP   22.8   19.4</code></pre>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">10000</span>)) <span class="sc">+</span></span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Household gas cost by year: Hawaii"</span>,</span>
 <span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Survey year"</span>, <span class="at">y =</span> <span class="st">"Monthly gas cost ($, log scale)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in rq.fit.br(wx, wy, tau = tau, ...): Solution may be nonunique</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -920,10 +917,10 @@ sd_JWMNP   22.8   19.4</code></pre>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gas_by_state<span class="sc">$</span>CA, <span class="at">cat_var =</span> <span class="st">"year"</span>, <span class="at">num_var =</span> <span class="st">"GASP"</span>) <span class="sc">+</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">10000</span>)) <span class="sc">+</span></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Household gas cost by year: California"</span>,</span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Survey year"</span>, <span class="at">y =</span> <span class="st">"Monthly gas cost ($, log scale)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gas_by_state<span class="sc">$</span>CA, <span class="at">cat_var =</span> <span class="st">"year"</span>, <span class="at">num_var =</span> <span class="st">"GASP"</span>) <span class="sc">+</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">10000</span>)) <span class="sc">+</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Household gas cost by year: California"</span>,</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Survey year"</span>, <span class="at">y =</span> <span class="st">"Monthly gas cost ($, log scale)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -939,17 +936,17 @@ sd_JWMNP   22.8   19.4</code></pre>
 <h3 class="anchored" data-anchor-id="q3.-gas-costs-and-rent-burden">Q3. Gas costs and rent burden</h3>
 <p>The API gives rent as a share of household income (<code>GRPIP</code>) rather than rent in dollars, so the question is specifically do people who pay a bigger share of their income toward rent show higher or lower gas bills? I group <code>GRPIP</code> so my plot method can be reused.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>rent_gas <span class="ot">&lt;-</span> nc <span class="sc">|&gt;</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(GASP <span class="sc">&gt;=</span> <span class="dv">4</span>, GRPIP <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">rent_burden =</span> <span class="fu">cut</span>(GRPIP,</span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>                           <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="cn">Inf</span>), <span class="at">right =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>                           <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">" &lt;20%"</span>, <span class="st">"20-29%"</span>, <span class="st">"30-49%"</span>, <span class="st">"50%+"</span>)))</span>
-<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted means and SDs by rent-burden group (NC renters, 2024)</span></span>
-<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(</span>
-<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(<span class="fu">split</span>(rent_gas, rent_gas<span class="sc">$</span>rent_burden),</span>
-<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>         \(d) <span class="fu">unlist</span>(<span class="fu">summary</span>(d, <span class="at">num_vars =</span> <span class="fu">c</span>(<span class="st">"GASP"</span>, <span class="st">"GRPIP"</span>), <span class="at">cat_vars =</span> <span class="fu">character</span>(<span class="dv">0</span>))<span class="sc">$</span>numeric)),</span>
-<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>rent_gas <span class="ot">&lt;-</span> nc <span class="sc">|&gt;</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(GASP <span class="sc">&gt;=</span> <span class="dv">4</span>, GRPIP <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">rent_burden =</span> <span class="fu">cut</span>(GRPIP,</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>                           <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="cn">Inf</span>), <span class="at">right =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>                           <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">" &lt;20%"</span>, <span class="st">"20-29%"</span>, <span class="st">"30-49%"</span>, <span class="st">"50%+"</span>)))</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted means and SDs by rent-burden group (NC renters, 2024)</span></span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(</span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(<span class="fu">split</span>(rent_gas, rent_gas<span class="sc">$</span>rent_burden),</span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>         \(d) <span class="fu">unlist</span>(<span class="fu">summary</span>(d, <span class="at">num_vars =</span> <span class="fu">c</span>(<span class="st">"GASP"</span>, <span class="st">"GRPIP"</span>), <span class="at">cat_vars =</span> <span class="fu">character</span>(<span class="dv">0</span>))<span class="sc">$</span>numeric)),</span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>            &lt;20% 20-29% 30-49%  50%+
 mean_GASP   81.4   89.6  107.1 150.3
@@ -957,10 +954,10 @@ sd_GASP     87.8   75.7  132.3 248.3
 mean_GRPIP  13.7   23.8   37.6  78.2
 sd_GRPIP     4.1    2.8    5.9  20.2</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rent_gas, <span class="at">cat_var =</span> <span class="st">"rent_burden"</span>, <span class="at">num_var =</span> <span class="st">"GASP"</span>) <span class="sc">+</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Household gas cost by rent burden (NC2024)"</span>,</span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"rent % of household income"</span>, <span class="at">y =</span> <span class="st">"Monthly gas cost ($, log scale)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rent_gas, <span class="at">cat_var =</span> <span class="st">"rent_burden"</span>, <span class="at">num_var =</span> <span class="st">"GASP"</span>) <span class="sc">+</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Household gas cost by rent burden (NC2024)"</span>,</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"rent % of household income"</span>, <span class="at">y =</span> <span class="st">"Monthly gas cost ($, log scale)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -972,26 +969,26 @@ sd_GRPIP     4.1    2.8    5.9  20.2</code></pre>
 <p>Household gas costs generally increased with rent burden. The average monthly gas bill rose from $81.40 in the lowest rent-burden group to $150.30 in the highest. The highest group also had the most variation in gas bills.</p>
 <p>However, the distributions overlap a lot, so people with higher rent burdens do not always have higher gas costs.</p>
 </section>
-<section id="q4.-education-and-rent-burden-by-sex" class="level3">
-<h3 class="anchored" data-anchor-id="q4.-education-and-rent-burden-by-sex">Q4. Education and rent burden, by sex</h3>
+<section id="q4.-education-and-rent-burden" class="level3">
+<h3 class="anchored" data-anchor-id="q4.-education-and-rent-burden">Q4. Education and rent burden</h3>
 <p>This is a comparison of rent burden across highest level of education for adults 25 and older (so most people have finished school). The <code>SCHL</code> factor has many detailed levels, so I look up each person’s official code from my saved variable descriptions and collapse the codes into six groups.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>schl_map <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">readRDS</span>(<span class="st">"data/variable_description.rds"</span>)<span class="sc">$</span>yr_24<span class="sc">$</span>SCHL<span class="sc">$</span>values<span class="sc">$</span>item)</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>edu_rent <span class="ot">&lt;-</span> nc <span class="sc">|&gt;</span></span>
-<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(AGEP <span class="sc">&gt;=</span> <span class="dv">25</span>, GRPIP <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
-<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">code =</span> <span class="fu">as.integer</span>(<span class="fu">names</span>(schl_map)[<span class="fu">match</span>(<span class="fu">as.character</span>(SCHL), schl_map)]),  <span class="co"># label back to code</span></span>
-<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">education =</span> <span class="fu">cut</span>(code, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">15</span>, <span class="dv">17</span>, <span class="dv">19</span>, <span class="dv">20</span>, <span class="dv">21</span>, <span class="dv">24</span>),</span>
-<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Less than HS"</span>, <span class="st">"HS / GED"</span>, <span class="st">"Some college"</span>,</span>
-<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"Associate's"</span>, <span class="st">"Bachelor's"</span>, <span class="st">"Graduate degree"</span>))</span>
-<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted rent burden (% of income) by education (NC renters 25+, 2024)</span></span>
-<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(</span>
-<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(<span class="fu">split</span>(edu_rent, edu_rent<span class="sc">$</span>education),</span>
-<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>         \(d) <span class="fu">unlist</span>(<span class="fu">summary</span>(d, <span class="at">num_vars =</span> <span class="st">"GRPIP"</span>, <span class="at">cat_vars =</span> <span class="fu">character</span>(<span class="dv">0</span>))<span class="sc">$</span>numeric)),</span>
-<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>schl_map <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">readRDS</span>(<span class="st">"data/variable_description.rds"</span>)<span class="sc">$</span>yr_24<span class="sc">$</span>SCHL<span class="sc">$</span>values<span class="sc">$</span>item)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>edu_rent <span class="ot">&lt;-</span> nc <span class="sc">|&gt;</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(AGEP <span class="sc">&gt;=</span> <span class="dv">25</span>, GRPIP <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">code =</span> <span class="fu">as.integer</span>(<span class="fu">names</span>(schl_map)[<span class="fu">match</span>(<span class="fu">as.character</span>(SCHL), schl_map)]),  <span class="co"># label back to code</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">education =</span> <span class="fu">cut</span>(code, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">15</span>, <span class="dv">17</span>, <span class="dv">19</span>, <span class="dv">20</span>, <span class="dv">21</span>, <span class="dv">24</span>),</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Less than HS"</span>, <span class="st">"HS / GED"</span>, <span class="st">"Some college"</span>,</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"Associate's"</span>, <span class="st">"Bachelor's"</span>, <span class="st">"Graduate degree"</span>))</span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted rent burden (% of income) by education (NC renters 25+, 2024)</span></span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(</span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(<span class="fu">split</span>(edu_rent, edu_rent<span class="sc">$</span>education),</span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>         \(d) <span class="fu">unlist</span>(<span class="fu">summary</span>(d, <span class="at">num_vars =</span> <span class="st">"GRPIP"</span>, <span class="at">cat_vars =</span> <span class="fu">character</span>(<span class="dv">0</span>))<span class="sc">$</span>numeric)),</span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>           Less than HS HS / GED Some college Associate's Bachelor's
 mean_GRPIP         40.8     35.7         35.3        34.3       31.4
@@ -1000,10 +997,10 @@ sd_GRPIP           28.6     25.5         25.3        25.0       22.6
 mean_GRPIP            30.8
 sd_GRPIP              23.3</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(edu_rent, <span class="at">cat_var =</span> <span class="st">"education"</span>, <span class="at">num_var =</span> <span class="st">"GRPIP"</span>) <span class="sc">+</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Rent burden by education (NC renters 25+, 2024)"</span>,</span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Highest education"</span>, <span class="at">y =</span> <span class="st">"Gross rent as % of household income"</span>) <span class="sc">+</span></span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">25</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(edu_rent, <span class="at">cat_var =</span> <span class="st">"education"</span>, <span class="at">num_var =</span> <span class="st">"GRPIP"</span>) <span class="sc">+</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Rent burden by education (NC renters 25+, 2024)"</span>,</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Highest education"</span>, <span class="at">y =</span> <span class="st">"Gross rent as % of household income"</span>) <span class="sc">+</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">25</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
