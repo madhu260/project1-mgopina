@@ -15,6 +15,27 @@ library(tidyverse)
 library(hms)
 ```
 
+This project is for me to learn and explore how API querying works by focusing on the U.S. Census Bureau's Public Use Microdata Sample (PUMS) API. Its vast amounts of information is what makes it ideal for this exploration task: navigating it is scary, long, and tedious. This is exactly the type of API that benefits from a mini specialized toolkit, allowing laymen (like me probably a month after this assignment is over) to access and learn from this dataset rather than ignore it because it feels daunting.
+
+Here's my workflow:
+
+1.  Write Functions that
+    1.  Query the API
+    2.  Allows for user specifications
+2.  Combines several years into one tibble
+3.  Custom summary information (numeric and visual)
+    1.  Use these summary tools to demonstrate their functionality but also to show it works
+
+This project focuses on data from 2021 - 2024. Here's a list of the relevant variables used in my functions:
+
+**Numeric variables**\
+- `AGEP`: age of the person in years - `GASP`: monthly gas cost for the household (some values are special codes such as gas being included in the rent) - `GRPIP`: gross rent as a percentage of household income - `JWAP`: time of arrival at work (reported in time ranges, which I convert to the midpoint of each range) - `JWDP`: time of departure for work (also converted to a midpoint) - `JWMNP`: travel time to work, in minutes - `PWGTP`: person weight, the number of people in the population that each row represents
+
+**Categorical variables**\
+- `FER`: whether the person gave birth to a child within the past 12 months - `HHL`: household language - `SCH`: school enrollment status - `SCHL`: highest level of educational attainment - `SEX`: sex of the person\
+**Geography variables**\
+- `STATE` (`ST` in 2021,2022): state of residence - `REGION`: Census region (such as Northeast or South) - `DIVISION`: Census division, a smaller grouping of states within a region
+
 # Part 1: Data Processing
 
 ### Parsing Variable Values
@@ -208,7 +229,7 @@ helper_data_types <- function(df, year) {
 
 ```
 
-dfskhjafsdjkhf
+This helper checks that the chosen geography codes are valid, handles the “all” option while excluding Puerto Rico, and formats the codes for the API query.
 
 ```{r}
 helper_geo_value_validate <- function(geo_specific, geo_map) {
@@ -238,7 +259,7 @@ helper_geo_value_validate <- function(geo_specific, geo_map) {
 }
 ```
 
-Lets incorporate our helpers into a function that accomplishes multiple goals
+Lets incorporate our helpers into a function that accomplishes multiple goals. The user may choose a survey year, numeric and categorical variables, and a geographic subset (if they don't, default values are provided, and `PWGTP` is mandatory included). The function checks these inputs, sends the request, and uses the helpers to return a tibble with numeric values, labeled factors, and time values. Finally, it adds the "census" class so we can use our custom summary and plotting methods later.
 
 ```{r}
 query_API <- function(year = 2024, 
@@ -347,7 +368,7 @@ query_API <- function(year = 2024,
 
 ### Combining Years
 
-I first check to see if the year values are valid (if not why bother wasting computing power). Then I use my `query_API()` function to query for all the given years (same conventions as the single year query apply, and the `...` in the argument takes care of that for user input), add it to an empty tibble one by one, then bind the rows after each addition. I also factorize year here so that it's helpful for the next numeric summarizing part. 
+I first check to see if the year values are valid (if not why bother wasting computing power). Then I use my `query_API()` function to query for all the given years (same conventions as the single year query apply, and the `...` in the argument takes care of that for user input), add it to an empty tibble one by one, then bind the rows after each addition. I also factorize year here so that it's helpful for the next numeric summarizing part.
 
 ```{r}
 
@@ -376,7 +397,9 @@ query_API_multi <- function(input_years, ...){
 
 # Part 2
 
-Helpers
+### Numeric Summaries
+
+Each row in the PUMS data represents a number of people given by `PWGTP`, so treating every row equally would be misleading. These helpers use that weight to calculate mean and standard deviation, leaving out observations with missing numeric values.
 
 ```{r}
 # weighted mean
@@ -393,6 +416,8 @@ weighted_sd <- function(x, w) {
 }
 
 ```
+
+Now I use these helpers to create a summary method for our census data. By default, it summarizes all numeric columns except `PWGTP` and counts the observations in each factor level. The user can also choose specific columns to summarize. The results are returned as a named list, making it similar to the baseR summary.
 
 ```{r}
 library(tidyverse)
@@ -448,16 +473,20 @@ summary.census <- function(object, num_vars = NULL, cat_vars = NULL) {
 
 ```
 
+Lets test and see if this code works by using default summary for multiple years, then by specifying what exact summary stats we want (one each type, `AGEP` and `year`)
 
 ```{r}
-# Test:
-dat <- query_API_multi(2023:2024, num_vars = c("AGEP", "JWMNP", "JWAP"),
-                        cat_vars = c("SEX", "SCHL"))
- summary(dat)
- summary(dat, num_vars = "AGEP", cat_vars = "year")
+dat <- query_API_multi(2023:2024, num_vars=c("AGEP", "GASP", "GRPIP"), cat_vars="SEX")
+print("Default Values (all)")
+summary(dat)
+print("\n One categorical (year), one numerical (AGEP)")
+summary(dat, num_vars = "AGEP", cat_vars = "year")
 
 ```
 
+From my testing of various combinations, all the numerical and categorical variables (apart from the time ones) seem to return values as expected (i.e. mean and sd for numeric, and count by levels for categorical).
+
+### Graphical Summaries
 
 ```{r}
 library(tidyverse)
@@ -480,7 +509,7 @@ plot.census <- function(x, cat_var, num_var) {
     stop("cat_var must be a categorical (factor or character) variable")
   }
 
-  # Base object: drop rows missing either variable, weight each row by PWGTP
+  # drop rows missing variable, weight each row by PWGTP
   g <- ggplot(x |> drop_na(all_of(c(cat_var, num_var))),
               aes(x = get(cat_var), y = get(num_var),
                   weight = PWGTP, fill = get(cat_var)))
@@ -493,17 +522,179 @@ plot.census <- function(x, cat_var, num_var) {
 }
 ```
 
+# Use and Investigate: household gas costs, commuting, and rent burden
+
+Now that the toolkit is working, I want to test it on a few questions about everyday costs. For each question I show the numerical summary (weighted means and standard deviations from `summary()`) as well as a visual (boxplots from `plot()`).
+
+Four questions:
+
+1.  Do household gas costs differ by commute time (and does commute time differ by sex)?
+2.  How have gas costs changed from 2021 to 2024 in North Carolina, Hawaii, and California?
+3.  Do people who spend a larger share of income on rent spend more or less on gas?
+4.  How does rent burden differ by highest level of education?
+
+These are some issues I noticed. Some numeric values are codes rather than measurements: `GASP` below 4 means gas is not separately billed (for example, included in rent), and `GRPIP` or `JWMNP` equal to 0 means not applicable. I drop those rows with `filter()` before summarizing. `GRPIP` is rent as a percent of household income, and a value of 101 means "101% or more". Gas costs are in nominal dollars, so they are not adjusted for inflation.
+
+### Gas costs, commute time, and rent: North Carolina, 2024
+
+Questions 1, 3, and 4 all use the same sample, so I query it once. This call tests `year` and the geography defaults (2024, North Carolina).
 
 ```{r}
-# Examples (dat comes from query_API_multi):
-dat <- query_API_multi(2023:2024, num_vars = c("AGEP", "JWMNP"),
-                       cat_vars = c("SEX", "SCHL"))
+nc <- query_API(
+  num_vars = c("AGEP", "GASP", "GRPIP", "JWMNP"),
+  cat_vars = c("SEX", "SCHL")
+)
+class(nc)
+```
 
- plot(dat, cat_var = "SEX", num_var = "AGEP")
- plot(dat, cat_var = "year", num_var = "JWMNP")
- plot(dat, cat_var = "SCHL", num_var = "AGEP") +
-   theme(axis.text.x = element_text(angle = 45, hjust = 1))   # long labels
- plot(dat, cat_var = "SEX", num_var = "AGEP") + theme_light()  # a course theme
+### Q1. Gas costs vs commute time
+
+```{r}
+commute_gas <- nc |>
+  filter(GASP >= 4, JWMNP > 0) |>
+  mutate(commute = cut(JWMNP,
+                       breaks = c(0, 15, 30, 45, Inf), right = FALSE,
+                       labels = c("Under 15 min", "15-29 min", "30-44 min", "45+ min")))
+
+# call summary() once per commute group
+# Weighted means and SDs by commute group (NC, 2024)
+round(
+  sapply(split(commute_gas, commute_gas$commute),
+         \(d) unlist(summary(d, num_vars = c("GASP", "JWMNP"), cat_vars = character(0))$numeric)),
+  1)
+
+plot(commute_gas, cat_var = "commute", num_var = "GASP") +
+  scale_y_log10() +
+  labs(title = "Household gas cost by commute time (NC, 2024)",
+       x = "Commute time", y = "Monthly gas cost ($, log scale)")
 
 ```
 
+Household gas costs look nearly the same across commute groups, except 45+ looks slightly higher. The medians sit around \$70-80 and the boxes overlap heavily, but the 45+ minute group (weighted mean about \$122 vs. about \$106-114 for the middle groups). The standard deviations (\$150-200) are larger than the differences between group means, so any commute effect is small compared to the household-to-household variation. Seems like longer commutes doesn't automatically mean higher monthly gas costs for the most part, unless you're a large outlier commute time.
+
+```{r}
+commuters <- nc |> filter(JWMNP > 0)
+
+# Weighted commute time (minutes) by sex (NC, 2024)
+round(
+  sapply(split(commuters, commuters$SEX),
+         \(d) unlist(summary(d, num_vars = "JWMNP", cat_vars = character(0))$numeric)),
+  1)
+
+plot(commuters, cat_var = "SEX", num_var = "JWMNP") +
+  labs(title = "Commute time by sex (NC, 2024)",
+       x = "Sex", y = "Travel time to work (minutes)")
+
+```
+Men in North Carolina have a slightly longer average commute than women (about 27.1 vs. 24.3 minutes, roughly a 3-minute gap). The spreads are wide (SD about 23 and 19 minutes), so the two groups overlap a lot and the difference might be negligible.
+
+### Q2. Gas costs over years (North Carolina, Hawaii, and California)
+
+This question uses my multi-year function, and each state is its own call with a different `geo_specific`. I only add `GASP` (the function defaults `PWGTP` and `SEX` ). 
+
+```{r}
+gas_by_state <- list(
+  NC     = query_API_multi(2021:2024, num_vars = "GASP", geo_specific = "37"),
+  Hawaii = query_API_multi(2021:2024, num_vars = "GASP", geo_specific = "15"),
+  CA     = query_API_multi(2021:2024, num_vars = "GASP", geo_specific = "06")
+) |>
+  lapply(\(d) filter(d, GASP >= 4))
+
+```
+
+Numeric Summary: the weighted mean monthly gas cost for each state and year, from `summary()`.
+
+```{r}
+round(
+  sapply(gas_by_state, \(d)
+         sapply(split(d, d$year), \(y)
+                summary(y, num_vars = "GASP", cat_vars = character(0))$numeric$mean_GASP)),
+  2)
+
+```
+
+Boxplots for each state. All three use the same y-axis range.
+
+```{r}
+plot(gas_by_state$NC, cat_var = "year", num_var = "GASP") +
+  scale_y_log10(limits = c(4, 10000)) +
+  labs(title = "Household gas cost by year: North Carolina",
+       x = "Survey year", y = "Monthly gas cost ($, log scale)")
+
+plot(gas_by_state$Hawaii, cat_var = "year", num_var = "GASP") +
+  scale_y_log10(limits = c(4, 10000)) +
+  labs(title = "Household gas cost by year: Hawaii",
+       x = "Survey year", y = "Monthly gas cost ($, log scale)")
+
+plot(gas_by_state$CA, cat_var = "year", num_var = "GASP") +
+  scale_y_log10(limits = c(4, 10000)) +
+  labs(title = "Household gas cost by year: California",
+       x = "Survey year", y = "Monthly gas cost ($, log scale)")
+```
+Household gas costs changed unevenly across the three states from 2021 to 2024. In North Carolina, the median increased in 2022, then slightly lower in 2023 and 2024. Hawaii also had similar median ranking as NC. California’s median peaked in 2023 before falling somewhat in 2024.
+
+The distributions overlap a lot across years, so the changes do not really suggest that a particular year had higher costs than others. 
+
+### Q3. Gas costs and rent burden
+
+The API gives rent as a share of household income (`GRPIP`) rather than rent in dollars, so the question is specifically  do people who pay a bigger share of their income toward rent show higher or lower gas bills? I group `GRPIP` so my plot method can be reused.
+
+```{r}
+rent_gas <- nc |>
+  filter(GASP >= 4, GRPIP > 0) |>
+  mutate(rent_burden = cut(GRPIP,
+                           breaks = c(0, 20, 30, 50, Inf), right = FALSE,
+                           labels = c(" <20%", "20-29%", "30-49%", "50%+")))
+
+# Weighted means and SDs by rent-burden group (NC renters, 2024)
+round(
+  sapply(split(rent_gas, rent_gas$rent_burden),
+         \(d) unlist(summary(d, num_vars = c("GASP", "GRPIP"), cat_vars = character(0))$numeric)),
+  1)
+
+plot(rent_gas, cat_var = "rent_burden", num_var = "GASP") +
+  scale_y_log10() +
+  labs(title = "Household gas cost by rent burden (NC2024)",
+       x = "rent % of household income", y = "Monthly gas cost ($, log scale)")
+
+```
+Household gas costs generally increased with rent burden. The average monthly gas bill rose from \$81.40 in the lowest rent-burden group to \$150.30 in the highest. The highest group also had the most variation in gas bills.
+
+However, the distributions overlap a lot, so people with higher rent burdens do not always have higher gas costs.
+
+### Q4. Education and rent burden, by sex
+
+This is a comparison of rent burden across highest level of education for adults 25 and older (so most people have finished school). The `SCHL` factor has many detailed levels, so I look up each person's official code from my saved variable descriptions and collapse the codes into six groups.
+
+```{r}
+schl_map <- unlist(readRDS("data/variable_description.rds")$yr_24$SCHL$values$item)
+
+edu_rent <- nc |>
+  filter(AGEP >= 25, GRPIP > 0) |>
+  mutate(
+    code = as.integer(names(schl_map)[match(as.character(SCHL), schl_map)]),  # label back to code
+    education = cut(code, breaks = c(0, 15, 17, 19, 20, 21, 24),
+                    labels = c("Less than HS", "HS / GED", "Some college",
+                               "Associate's", "Bachelor's", "Graduate degree"))
+  )
+
+# Weighted rent burden (% of income) by education (NC renters 25+, 2024)
+round(
+  sapply(split(edu_rent, edu_rent$education),
+         \(d) unlist(summary(d, num_vars = "GRPIP", cat_vars = character(0))$numeric)),
+  1)
+
+plot(edu_rent, cat_var = "education", num_var = "GRPIP") +
+  labs(title = "Rent burden by education (NC renters 25+, 2024)",
+       x = "Highest education", y = "Gross rent as % of household income") +
+  theme(axis.text.x = element_text(angle = 25, hjust = 1))
+
+```
+For North Carolina renters aged 25 and older, higher educational attainment is associated with lower rent burden. The weighted mean declined from 40.8% of household income for those with less than a high school education to 30.8% for those with a graduate degree (10% difference). The boxplots shows the same pattern in the medians, with a wider spread among those with less than a high school education.
+
+However, the distributions overlap considerably, and high rent burdens appear in every education group. This suggests that education alone does not explain the variation. Also, a lower rent burden does not necessarily mean lower rent payments: it could reflect higher household income, lower rent, or both.
+
+
+# Conclusion
+
+The most interesting part of this project was creating the summary and plotting functions, since they turned the data I queried into something easier to understand and explore. This was also my first time implementing a custom class and seeing how R uses it to choose the appropriate method. Adding the `"census"` class and then calling `summary()` and `plot()` made that concept feel much more concrete. Overall, I now have a better understanding of API querying and a toolkit I can reuse.

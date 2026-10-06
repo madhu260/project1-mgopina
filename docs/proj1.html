@@ -155,6 +155,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(hms)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>This project is for me to learn and explore how API querying works by focusing on the U.S. Census Bureau’s Public Use Microdata Sample (PUMS) API. Its vast amounts of information is what makes it ideal for this exploration task: navigating it is scary, long, and tedious. This is exactly the type of API that benefits from a mini specialized toolkit, allowing laymen (like me probably a month after this assignment is over) to access and learn from this dataset rather than ignore it because it feels daunting.</p>
+<p>Here’s my workflow:</p>
+<ol type="1">
+<li>Write Functions that
+<ol type="1">
+<li>Query the API</li>
+<li>Allows for user specifications</li>
+</ol></li>
+<li>Combines several years into one tibble</li>
+<li>Custom summary information (numeric and visual)
+<ol type="1">
+<li>Use these summary tools to demonstrate their functionality but also to show it works</li>
+</ol></li>
+</ol>
+<p>This project focuses on data from 2021 - 2024. Here’s a list of the relevant variables used in my functions:</p>
+<p><strong>Numeric variables</strong><br>
+- <code>AGEP</code>: age of the person in years - <code>GASP</code>: monthly gas cost for the household (some values are special codes such as gas being included in the rent) - <code>GRPIP</code>: gross rent as a percentage of household income - <code>JWAP</code>: time of arrival at work (reported in time ranges, which I convert to the midpoint of each range) - <code>JWDP</code>: time of departure for work (also converted to a midpoint) - <code>JWMNP</code>: travel time to work, in minutes - <code>PWGTP</code>: person weight, the number of people in the population that each row represents</p>
+<p><strong>Categorical variables</strong><br>
+- <code>FER</code>: whether the person gave birth to a child within the past 12 months - <code>HHL</code>: household language - <code>SCH</code>: school enrollment status - <code>SCHL</code>: highest level of educational attainment - <code>SEX</code>: sex of the person<br>
+<strong>Geography variables</strong><br>
+- <code>STATE</code> (<code>ST</code> in 2021,2022): state of residence - <code>REGION</code>: Census region (such as Northeast or South) - <code>DIVISION</code>: Census division, a smaller grouping of states within a region</p>
 <section id="part-1-data-processing" class="level1">
 <h1>Part 1: Data Processing</h1>
 <section id="parsing-variable-values" class="level3">
@@ -217,7 +238,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>response</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Response [https://api.census.gov/data/2024/acs/acs1/pums?get=AGEP%2CGASP%2CGRPIP%2CJWAP%2CJWDP%2CJWMNP%2CPWGTP&amp;for=state%3A37&amp;key=1348faf156b7a097f231193d4f8b704b551a179b]
-  Date: 2026-10-06 02:37
+  Date: 2026-10-06 06:04
   Status: 200
   Content-Type: application/json;charset=utf-8
   Size: 4.6 MB
@@ -247,7 +268,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   ..$ content-security-policy     : chr "default-src 'self'; img-src 'self' data:; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self"| __truncated__
   ..$ x-content-type-options      : chr "nosniff"
   ..$ content-type                : chr "application/json;charset=utf-8"
-  ..$ date                        : chr "Tue, 06 Oct 2026 02:37:01 GMT"
+  ..$ date                        : chr "Tue, 06 Oct 2026 06:04:37 GMT"
   ..$ strict-transport-security   : chr "max-age=31536000"
   ..$ transfer-encoding           : chr "chunked"
   ..- attr(*, "class")= chr [1:2] "insensitive" "list"
@@ -264,7 +285,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   .. .. ..$ content-security-policy     : chr "default-src 'self'; img-src 'self' data:; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self"| __truncated__
   .. .. ..$ x-content-type-options      : chr "nosniff"
   .. .. ..$ content-type                : chr "application/json;charset=utf-8"
-  .. .. ..$ date                        : chr "Tue, 06 Oct 2026 02:37:01 GMT"
+  .. .. ..$ date                        : chr "Tue, 06 Oct 2026 06:04:37 GMT"
   .. .. ..$ strict-transport-security   : chr "max-age=31536000"
   .. .. ..$ transfer-encoding           : chr "chunked"
   .. .. ..- attr(*, "class")= chr [1:2] "insensitive" "list"
@@ -275,10 +296,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   ..$ secure    : logi TRUE
   ..$ expiration: POSIXct[1:1], format: "Inf"
   ..$ name      : chr "TS010383f0"
-  ..$ value     : chr "01283c52a4f0c6e83e3fb705e61f0a5942acd027592149a3ac9f284a158ab437c518029f01fcac4d1cbfcf567b3d2401e86df0f2ef"
+  ..$ value     : chr "01283c52a40eabbf1e43b430877f00ceac9c21273d7c2c143c8f80dde047456d1bfd9bc8575ca2a5aa8ec0d699b0821a14e96c63c0"
  $ content    : raw [1:4599120] 5b 5b 22 41 ...
- $ date       : POSIXct[1:1], format: "2026-10-06 02:37:01"
- $ times      : Named num [1:6] 0 0.000066 0 0.000204 0.676766 ...
+ $ date       : POSIXct[1:1], format: "2026-10-06 06:04:37"
+ $ times      : Named num [1:6] 0 0.000089 0 0.000304 0.790965 ...
   ..- attr(*, "names")= chr [1:6] "redirect" "namelookup" "connect" "pretransfer" ...
  $ request    :List of 7
   ..$ method    : chr "GET"
@@ -425,7 +446,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
 <span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>dfskhjafsdjkhf</p>
+<p>This helper checks that the chosen geography codes are valid, handles the “all” option while excluding Puerto Rico, and formats the codes for the API query.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>helper_geo_value_validate <span class="ot">&lt;-</span> <span class="cf">function</span>(geo_specific, geo_map) {</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -453,7 +474,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">paste</span>(<span class="fu">unique</span>(geo_specific), <span class="at">collapse =</span> <span class="st">","</span>))</span>
 <span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Lets incorporate our helpers into a function that accomplishes multiple goals</p>
+<p>Lets incorporate our helpers into a function that accomplishes multiple goals. The user may choose a survey year, numeric and categorical variables, and a geographic subset (if they don’t, default values are provided, and <code>PWGTP</code> is mandatory included). The function checks these inputs, sends the request, and uses the helpers to return a tibble with numeric values, labeled factors, and time values. Finally, it adds the “census” class so we can use our custom summary and plotting methods later.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>query_API <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">year =</span> <span class="dv">2024</span>, </span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                      <span class="at">num_vars =</span> <span class="fu">c</span>(<span class="st">"AGEP"</span>,<span class="st">"PWGTP"</span>), <span class="at">cat_vars=</span><span class="st">"SEX"</span>, </span>
@@ -589,7 +610,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="part-2" class="level1">
 <h1>Part 2</h1>
-<p>Helpers</p>
+<section id="numeric-summaries" class="level3">
+<h3 class="anchored" data-anchor-id="numeric-summaries">Numeric Summaries</h3>
+<p>Each row in the PUMS data represents a number of people given by <code>PWGTP</code>, so treating every row equally would be misleading. These helpers use that weight to calculate mean and standard deviation, leaving out observations with missing numeric values.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># weighted mean</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>weighted_mean <span class="ot">&lt;-</span> <span class="cf">function</span>(x, w) {</span>
@@ -604,6 +627,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sqrt</span>(<span class="fu">sum</span>(x[keep]<span class="sc">^</span><span class="dv">2</span> <span class="sc">*</span> w[keep]) <span class="sc">/</span> <span class="fu">sum</span>(w[keep]) <span class="sc">-</span> m<span class="sc">^</span><span class="dv">2</span>)</span>
 <span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>Now I use these helpers to create a summary method for our census data. By default, it summarizes all numeric columns except <code>PWGTP</code> and counts the observations in each factor level. The user can also choose specific columns to summarize. The results are returned as a named list, making it similar to the baseR summary.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -656,11 +680,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb17-49"><a href="#cb17-49" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-50"><a href="#cb17-50" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>Lets test and see if this code works by using default summary for multiple years, then by specifying what exact summary stats we want (one each type, <code>AGEP</code> and <code>year</code>)</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test:</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">query_API_multi</span>(<span class="dv">2023</span><span class="sc">:</span><span class="dv">2024</span>, <span class="at">num_vars =</span> <span class="fu">c</span>(<span class="st">"AGEP"</span>, <span class="st">"JWMNP"</span>, <span class="st">"JWAP"</span>),</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>                        <span class="at">cat_vars =</span> <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"SCHL"</span>))</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a> <span class="fu">summary</span>(dat)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">query_API_multi</span>(<span class="dv">2023</span><span class="sc">:</span><span class="dv">2024</span>, <span class="at">num_vars=</span><span class="fu">c</span>(<span class="st">"AGEP"</span>, <span class="st">"GASP"</span>, <span class="st">"GRPIP"</span>), <span class="at">cat_vars=</span><span class="st">"SEX"</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Default Values (all)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Default Values (all)"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dat)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$numeric
 $numeric$mean_AGEP
@@ -669,11 +696,17 @@ $numeric$mean_AGEP
 $numeric$sd_AGEP
 [1] 23.25635
 
-$numeric$mean_JWMNP
-[1] 10.43092
+$numeric$mean_GASP
+[1] 48.14171
 
-$numeric$sd_JWMNP
-[1] 18.46952
+$numeric$sd_GASP
+[1] 119.4363
+
+$numeric$mean_GRPIP
+[1] 9.953021
+
+$numeric$sd_GRPIP
+[1] 21.31345
 
 
 $categorical
@@ -681,63 +714,15 @@ $categorical$SEX
   Male Female 
 109794 116396 
 
-$categorical$SCHL
-                   N/A (less than 3 years old) 
-                                          5923 
-                        No schooling completed 
-                                          6173 
-                     Nursery school, preschool 
-                                          2824 
-                                  Kindergarten 
-                                          2383 
-                                       Grade 1 
-                                          2271 
-                                       Grade 2 
-                                          2331 
-                                       Grade 3 
-                                          2434 
-                                       Grade 4 
-                                          2507 
-                                       Grade 5 
-                                          2606 
-                                       Grade 6 
-                                          3076 
-                                       Grade 7 
-                                          2851 
-                                       Grade 8 
-                                          3852 
-                                       Grade 9 
-                                          4603 
-                                      Grade 10 
-                                          5049 
-                                      Grade 11 
-                                          5128 
-                       12th grade - no diploma 
-                                          3197 
-                   Regular high school diploma 
-                                         40510 
-                 GED or alternative credential 
-                                          7871 
-            Some college, but less than 1 year 
-                                         13531 
-  1 or more years of college credit, no degree 
-                                         25018 
-                            Associate's degree 
-                                         17983 
-                             Bachelor's degree 
-                                         39485 
-                               Master's degree 
-                                         17745 
-Professional degree beyond a bachelor's degree 
-                                          3725 
-                              Doctorate degree 
-                                          3114 
-
 $categorical$year
   2023   2024 
 111920 114270 </code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a> <span class="fu">summary</span>(dat, <span class="at">num_vars =</span> <span class="st">"AGEP"</span>, <span class="at">cat_vars =</span> <span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"</span><span class="sc">\n</span><span class="st"> One categorical (year), one numerical (AGEP)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "\n One categorical (year), one numerical (AGEP)"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(dat, <span class="at">num_vars =</span> <span class="st">"AGEP"</span>, <span class="at">cat_vars =</span> <span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$numeric
 $numeric$mean_AGEP
@@ -753,45 +738,96 @@ $categorical$year
 111920 114270 </code></pre>
 </div>
 </div>
+<p>From my testing of various combinations, all the numerical and categorical variables (apart from the time ones) seem to return values as expected (i.e.&nbsp;mean and sd for numeric, and count by levels for categorical).</p>
+</section>
+<section id="graphical-summaries" class="level3">
+<h3 class="anchored" data-anchor-id="graphical-summaries">Graphical Summaries</h3>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>plot.census <span class="ot">&lt;-</span> <span class="cf">function</span>(x, cat_var, num_var) {</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">class</span>(x) <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(<span class="fu">class</span>(x), <span class="st">"census"</span>)                         <span class="co">#same reason as numeric summary</span></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check inputs</span></span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(cat_var) <span class="sc">!=</span> <span class="dv">1</span>L <span class="sc">||</span> <span class="fu">length</span>(num_var) <span class="sc">!=</span> <span class="dv">1</span>L) {</span>
-<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Specify exactly one categorical variable and one numeric variable"</span>)</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(<span class="fu">c</span>(cat_var, num_var) <span class="sc">%in%</span> <span class="fu">names</span>(x))) {</span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"cat_var and num_var must be columns of the census tibble"</span>)</span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.numeric</span>(x[[num_var]]) <span class="sc">||</span> num_var <span class="sc">==</span> <span class="st">"PWGTP"</span>) {</span>
-<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"num_var must be a numeric variable other than PWGTP (time variables are not supported)"</span>)</span>
-<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>(<span class="fu">is.factor</span>(x[[cat_var]]) <span class="sc">||</span> <span class="fu">is.character</span>(x[[cat_var]]))) {</span>
-<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"cat_var must be a categorical (factor or character) variable"</span>)</span>
-<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Base object: drop rows missing either variable, weight each row by PWGTP</span></span>
-<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(x <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(<span class="fu">all_of</span>(<span class="fu">c</span>(cat_var, num_var))),</span>
-<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>              <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">get</span>(cat_var), <span class="at">y =</span> <span class="fu">get</span>(num_var),</span>
-<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>                  <span class="at">weight =</span> PWGTP, <span class="at">fill =</span> <span class="fu">get</span>(cat_var)))</span>
-<span id="cb22-25"><a href="#cb22-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-26"><a href="#cb22-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Boxplot layer plus labels (the legend would just repeat the x-axis)</span></span>
-<span id="cb22-27"><a href="#cb22-27" aria-hidden="true" tabindex="-1"></a>  g <span class="sc">+</span></span>
-<span id="cb22-28"><a href="#cb22-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
-<span id="cb22-29"><a href="#cb22-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> cat_var, <span class="at">y =</span> num_var) <span class="sc">+</span></span>
-<span id="cb22-30"><a href="#cb22-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span>
-<span id="cb22-31"><a href="#cb22-31" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>plot.census <span class="ot">&lt;-</span> <span class="cf">function</span>(x, cat_var, num_var) {</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">class</span>(x) <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(<span class="fu">class</span>(x), <span class="st">"census"</span>)                         <span class="co">#same reason as numeric summary</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check inputs</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(cat_var) <span class="sc">!=</span> <span class="dv">1</span>L <span class="sc">||</span> <span class="fu">length</span>(num_var) <span class="sc">!=</span> <span class="dv">1</span>L) {</span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Specify exactly one categorical variable and one numeric variable"</span>)</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">all</span>(<span class="fu">c</span>(cat_var, num_var) <span class="sc">%in%</span> <span class="fu">names</span>(x))) {</span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"cat_var and num_var must be columns of the census tibble"</span>)</span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.numeric</span>(x[[num_var]]) <span class="sc">||</span> num_var <span class="sc">==</span> <span class="st">"PWGTP"</span>) {</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"num_var must be a numeric variable other than PWGTP (time variables are not supported)"</span>)</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span>(<span class="fu">is.factor</span>(x[[cat_var]]) <span class="sc">||</span> <span class="fu">is.character</span>(x[[cat_var]]))) {</span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"cat_var must be a categorical (factor or character) variable"</span>)</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># drop rows missing variable, weight each row by PWGTP</span></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(x <span class="sc">|&gt;</span> <span class="fu">drop_na</span>(<span class="fu">all_of</span>(<span class="fu">c</span>(cat_var, num_var))),</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>              <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">get</span>(cat_var), <span class="at">y =</span> <span class="fu">get</span>(num_var),</span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>                  <span class="at">weight =</span> PWGTP, <span class="at">fill =</span> <span class="fu">get</span>(cat_var)))</span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Boxplot layer plus labels (the legend would just repeat the x-axis)</span></span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>  g <span class="sc">+</span></span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> cat_var, <span class="at">y =</span> num_var) <span class="sc">+</span></span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+</section>
+</section>
+<section id="use-and-investigate-household-gas-costs-commuting-and-rent-burden" class="level1">
+<h1>Use and Investigate: household gas costs, commuting, and rent burden</h1>
+<p>Now that the toolkit is working, I want to test it on a few questions about everyday costs. For each question I show the numerical summary (weighted means and standard deviations from <code>summary()</code>) as well as a visual (boxplots from <code>plot()</code>).</p>
+<p>Four questions:</p>
+<ol type="1">
+<li>Do household gas costs differ by commute time (and does commute time differ by sex)?</li>
+<li>How have gas costs changed from 2021 to 2024 in North Carolina, Hawaii, and California?</li>
+<li>Do people who spend a larger share of income on rent spend more or less on gas?</li>
+<li>How does rent burden differ by highest level of education?</li>
+</ol>
+<p>These are some issues I noticed. Some numeric values are codes rather than measurements: <code>GASP</code> below 4 means gas is not separately billed (for example, included in rent), and <code>GRPIP</code> or <code>JWMNP</code> equal to 0 means not applicable. I drop those rows with <code>filter()</code> before summarizing. <code>GRPIP</code> is rent as a percent of household income, and a value of 101 means “101% or more”. Gas costs are in nominal dollars, so they are not adjusted for inflation.</p>
+<section id="gas-costs-commute-time-and-rent-north-carolina-2024" class="level3">
+<h3 class="anchored" data-anchor-id="gas-costs-commute-time-and-rent-north-carolina-2024">Gas costs, commute time, and rent: North Carolina, 2024</h3>
+<p>Questions 1, 3, and 4 all use the same sample, so I query it once. This call tests <code>year</code> and the geography defaults (2024, North Carolina).</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Examples (dat comes from query_API_multi):</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">query_API_multi</span>(<span class="dv">2023</span><span class="sc">:</span><span class="dv">2024</span>, <span class="at">num_vars =</span> <span class="fu">c</span>(<span class="st">"AGEP"</span>, <span class="st">"JWMNP"</span>),</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                       <span class="at">cat_vars =</span> <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"SCHL"</span>))</span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a> <span class="fu">plot</span>(dat, <span class="at">cat_var =</span> <span class="st">"SEX"</span>, <span class="at">num_var =</span> <span class="st">"AGEP"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>nc <span class="ot">&lt;-</span> <span class="fu">query_API</span>(</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">num_vars =</span> <span class="fu">c</span>(<span class="st">"AGEP"</span>, <span class="st">"GASP"</span>, <span class="st">"GRPIP"</span>, <span class="st">"JWMNP"</span>),</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">cat_vars =</span> <span class="fu">c</span>(<span class="st">"SEX"</span>, <span class="st">"SCHL"</span>)</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(nc)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "census"     "tbl_df"     "tbl"        "data.frame"</code></pre>
+</div>
+</div>
+</section>
+<section id="q1.-gas-costs-vs-commute-time" class="level3">
+<h3 class="anchored" data-anchor-id="q1.-gas-costs-vs-commute-time">Q1. Gas costs vs commute time</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>commute_gas <span class="ot">&lt;-</span> nc <span class="sc">|&gt;</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(GASP <span class="sc">&gt;=</span> <span class="dv">4</span>, JWMNP <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">commute =</span> <span class="fu">cut</span>(JWMNP,</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>                       <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">15</span>, <span class="dv">30</span>, <span class="dv">45</span>, <span class="cn">Inf</span>), <span class="at">right =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>                       <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Under 15 min"</span>, <span class="st">"15-29 min"</span>, <span class="st">"30-44 min"</span>, <span class="st">"45+ min"</span>)))</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="co"># call summary() once per commute group</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted means and SDs by commute group (NC, 2024)</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(</span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(<span class="fu">split</span>(commute_gas, commute_gas<span class="sc">$</span>commute),</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>         \(d) <span class="fu">unlist</span>(<span class="fu">summary</span>(d, <span class="at">num_vars =</span> <span class="fu">c</span>(<span class="st">"GASP"</span>, <span class="st">"JWMNP"</span>), <span class="at">cat_vars =</span> <span class="fu">character</span>(<span class="dv">0</span>))<span class="sc">$</span>numeric)),</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           Under 15 min 15-29 min 30-44 min 45+ min
+mean_GASP         122.3     106.4     113.9   122.5
+sd_GASP           200.5     151.8     172.1   191.7
+mean_JWMNP          8.1      19.1      33.1    63.2
+sd_JWMNP            3.1       3.8       4.1    29.4</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(commute_gas, <span class="at">cat_var =</span> <span class="st">"commute"</span>, <span class="at">num_var =</span> <span class="st">"GASP"</span>) <span class="sc">+</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Household gas cost by commute time (NC, 2024)"</span>,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Commute time"</span>, <span class="at">y =</span> <span class="st">"Monthly gas cost ($, log scale)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in .recacheSubclasses(def@className, def, env): undefined subclass
 "ndiMatrix" of class "replValueSp"; definition not updated</code></pre>
@@ -799,36 +835,190 @@ $categorical$year
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="proj1_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="proj1_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a> <span class="fu">plot</span>(dat, <span class="at">cat_var =</span> <span class="st">"year"</span>, <span class="at">num_var =</span> <span class="st">"JWMNP"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Household gas costs look nearly the same across commute groups, except 45+ looks slightly higher. The medians sit around $70-80 and the boxes overlap heavily, but the 45+ minute group (weighted mean about $122 vs.&nbsp;about $106-114 for the middle groups). The standard deviations ($150-200) are larger than the differences between group means, so any commute effect is small compared to the household-to-household variation. Seems like longer commutes doesn’t automatically mean higher monthly gas costs for the most part, unless you’re a large outlier commute time.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>commuters <span class="ot">&lt;-</span> nc <span class="sc">|&gt;</span> <span class="fu">filter</span>(JWMNP <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted commute time (minutes) by sex (NC, 2024)</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(<span class="fu">split</span>(commuters, commuters<span class="sc">$</span>SEX),</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>         \(d) <span class="fu">unlist</span>(<span class="fu">summary</span>(d, <span class="at">num_vars =</span> <span class="st">"JWMNP"</span>, <span class="at">cat_vars =</span> <span class="fu">character</span>(<span class="dv">0</span>))<span class="sc">$</span>numeric)),</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           Male Female
+mean_JWMNP 27.1   24.3
+sd_JWMNP   22.8   19.4</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(commuters, <span class="at">cat_var =</span> <span class="st">"SEX"</span>, <span class="at">num_var =</span> <span class="st">"JWMNP"</span>) <span class="sc">+</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Commute time by sex (NC, 2024)"</span>,</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Sex"</span>, <span class="at">y =</span> <span class="st">"Travel time to work (minutes)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="proj1_files/figure-html/unnamed-chunk-16-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="proj1_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a> <span class="fu">plot</span>(dat, <span class="at">cat_var =</span> <span class="st">"SCHL"</span>, <span class="at">num_var =</span> <span class="st">"AGEP"</span>) <span class="sc">+</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))   <span class="co"># long labels</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Men in North Carolina have a slightly longer average commute than women (about 27.1 vs.&nbsp;24.3 minutes, roughly a 3-minute gap). The spreads are wide (SD about 23 and 19 minutes), so the two groups overlap a lot and the difference might be negligible.</p>
+</section>
+<section id="q2.-gas-costs-over-years-north-carolina-hawaii-and-california" class="level3">
+<h3 class="anchored" data-anchor-id="q2.-gas-costs-over-years-north-carolina-hawaii-and-california">Q2. Gas costs over years (North Carolina, Hawaii, and California)</h3>
+<p>This question uses my multi-year function, and each state is its own call with a different <code>geo_specific</code>. I only add <code>GASP</code> (the function defaults <code>PWGTP</code> and <code>SEX</code> ).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>gas_by_state <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">NC     =</span> <span class="fu">query_API_multi</span>(<span class="dv">2021</span><span class="sc">:</span><span class="dv">2024</span>, <span class="at">num_vars =</span> <span class="st">"GASP"</span>, <span class="at">geo_specific =</span> <span class="st">"37"</span>),</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">Hawaii =</span> <span class="fu">query_API_multi</span>(<span class="dv">2021</span><span class="sc">:</span><span class="dv">2024</span>, <span class="at">num_vars =</span> <span class="st">"GASP"</span>, <span class="at">geo_specific =</span> <span class="st">"15"</span>),</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">CA     =</span> <span class="fu">query_API_multi</span>(<span class="dv">2021</span><span class="sc">:</span><span class="dv">2024</span>, <span class="at">num_vars =</span> <span class="st">"GASP"</span>, <span class="at">geo_specific =</span> <span class="st">"06"</span>)</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lapply</span>(\(d) <span class="fu">filter</span>(d, GASP <span class="sc">&gt;=</span> <span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Numeric Summary: the weighted mean monthly gas cost for each state and year, from <code>summary()</code>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(gas_by_state, \(d)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>         <span class="fu">sapply</span>(<span class="fu">split</span>(d, d<span class="sc">$</span>year), \(y)</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">summary</span>(y, <span class="at">num_vars =</span> <span class="st">"GASP"</span>, <span class="at">cat_vars =</span> <span class="fu">character</span>(<span class="dv">0</span>))<span class="sc">$</span>numeric<span class="sc">$</span>mean_GASP)),</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>         NC Hawaii     CA
+2021  90.57  86.28  74.18
+2022 120.35 106.41  94.30
+2023 116.96 120.63 118.15
+2024 114.22 115.91 101.56</code></pre>
+</div>
+</div>
+<p>Boxplots for each state. All three use the same y-axis range.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gas_by_state<span class="sc">$</span>NC, <span class="at">cat_var =</span> <span class="st">"year"</span>, <span class="at">num_var =</span> <span class="st">"GASP"</span>) <span class="sc">+</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">10000</span>)) <span class="sc">+</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Household gas cost by year: North Carolina"</span>,</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Survey year"</span>, <span class="at">y =</span> <span class="st">"Monthly gas cost ($, log scale)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="proj1_files/figure-html/unnamed-chunk-16-3.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="proj1_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a> <span class="fu">plot</span>(dat, <span class="at">cat_var =</span> <span class="st">"SEX"</span>, <span class="at">num_var =</span> <span class="st">"AGEP"</span>) <span class="sc">+</span> <span class="fu">theme_light</span>()  <span class="co"># a course theme</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gas_by_state<span class="sc">$</span>Hawaii, <span class="at">cat_var =</span> <span class="st">"year"</span>, <span class="at">num_var =</span> <span class="st">"GASP"</span>) <span class="sc">+</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">10000</span>)) <span class="sc">+</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Household gas cost by year: Hawaii"</span>,</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Survey year"</span>, <span class="at">y =</span> <span class="st">"Monthly gas cost ($, log scale)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in rq.fit.br(wx, wy, tau = tau, ...): Solution may be nonunique</code></pre>
+</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="proj1_files/figure-html/unnamed-chunk-16-4.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="proj1_files/figure-html/unnamed-chunk-21-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(gas_by_state<span class="sc">$</span>CA, <span class="at">cat_var =</span> <span class="st">"year"</span>, <span class="at">num_var =</span> <span class="st">"GASP"</span>) <span class="sc">+</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">10000</span>)) <span class="sc">+</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Household gas cost by year: California"</span>,</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Survey year"</span>, <span class="at">y =</span> <span class="st">"Monthly gas cost ($, log scale)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="proj1_files/figure-html/unnamed-chunk-21-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
+<p>Household gas costs changed unevenly across the three states from 2021 to 2024. In North Carolina, the median increased in 2022, then slightly lower in 2023 and 2024. Hawaii also had similar median ranking as NC. California’s median peaked in 2023 before falling somewhat in 2024.</p>
+<p>The distributions overlap a lot across years, so the changes do not really suggest that a particular year had higher costs than others.</p>
+</section>
+<section id="q3.-gas-costs-and-rent-burden" class="level3">
+<h3 class="anchored" data-anchor-id="q3.-gas-costs-and-rent-burden">Q3. Gas costs and rent burden</h3>
+<p>The API gives rent as a share of household income (<code>GRPIP</code>) rather than rent in dollars, so the question is specifically do people who pay a bigger share of their income toward rent show higher or lower gas bills? I group <code>GRPIP</code> so my plot method can be reused.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>rent_gas <span class="ot">&lt;-</span> nc <span class="sc">|&gt;</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(GASP <span class="sc">&gt;=</span> <span class="dv">4</span>, GRPIP <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">rent_burden =</span> <span class="fu">cut</span>(GRPIP,</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>                           <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">20</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="cn">Inf</span>), <span class="at">right =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>                           <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">" &lt;20%"</span>, <span class="st">"20-29%"</span>, <span class="st">"30-49%"</span>, <span class="st">"50%+"</span>)))</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted means and SDs by rent-burden group (NC renters, 2024)</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(<span class="fu">split</span>(rent_gas, rent_gas<span class="sc">$</span>rent_burden),</span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>         \(d) <span class="fu">unlist</span>(<span class="fu">summary</span>(d, <span class="at">num_vars =</span> <span class="fu">c</span>(<span class="st">"GASP"</span>, <span class="st">"GRPIP"</span>), <span class="at">cat_vars =</span> <span class="fu">character</span>(<span class="dv">0</span>))<span class="sc">$</span>numeric)),</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>            &lt;20% 20-29% 30-49%  50%+
+mean_GASP   81.4   89.6  107.1 150.3
+sd_GASP     87.8   75.7  132.3 248.3
+mean_GRPIP  13.7   23.8   37.6  78.2
+sd_GRPIP     4.1    2.8    5.9  20.2</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(rent_gas, <span class="at">cat_var =</span> <span class="st">"rent_burden"</span>, <span class="at">num_var =</span> <span class="st">"GASP"</span>) <span class="sc">+</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Household gas cost by rent burden (NC2024)"</span>,</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"rent % of household income"</span>, <span class="at">y =</span> <span class="st">"Monthly gas cost ($, log scale)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="proj1_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Household gas costs generally increased with rent burden. The average monthly gas bill rose from $81.40 in the lowest rent-burden group to $150.30 in the highest. The highest group also had the most variation in gas bills.</p>
+<p>However, the distributions overlap a lot, so people with higher rent burdens do not always have higher gas costs.</p>
+</section>
+<section id="q4.-education-and-rent-burden-by-sex" class="level3">
+<h3 class="anchored" data-anchor-id="q4.-education-and-rent-burden-by-sex">Q4. Education and rent burden, by sex</h3>
+<p>This is a comparison of rent burden across highest level of education for adults 25 and older (so most people have finished school). The <code>SCHL</code> factor has many detailed levels, so I look up each person’s official code from my saved variable descriptions and collapse the codes into six groups.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>schl_map <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">readRDS</span>(<span class="st">"data/variable_description.rds"</span>)<span class="sc">$</span>yr_24<span class="sc">$</span>SCHL<span class="sc">$</span>values<span class="sc">$</span>item)</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>edu_rent <span class="ot">&lt;-</span> nc <span class="sc">|&gt;</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(AGEP <span class="sc">&gt;=</span> <span class="dv">25</span>, GRPIP <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">code =</span> <span class="fu">as.integer</span>(<span class="fu">names</span>(schl_map)[<span class="fu">match</span>(<span class="fu">as.character</span>(SCHL), schl_map)]),  <span class="co"># label back to code</span></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">education =</span> <span class="fu">cut</span>(code, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">15</span>, <span class="dv">17</span>, <span class="dv">19</span>, <span class="dv">20</span>, <span class="dv">21</span>, <span class="dv">24</span>),</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>                    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Less than HS"</span>, <span class="st">"HS / GED"</span>, <span class="st">"Some college"</span>,</span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>                               <span class="st">"Associate's"</span>, <span class="st">"Bachelor's"</span>, <span class="st">"Graduate degree"</span>))</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Weighted rent burden (% of income) by education (NC renters 25+, 2024)</span></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(<span class="fu">split</span>(edu_rent, edu_rent<span class="sc">$</span>education),</span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>         \(d) <span class="fu">unlist</span>(<span class="fu">summary</span>(d, <span class="at">num_vars =</span> <span class="st">"GRPIP"</span>, <span class="at">cat_vars =</span> <span class="fu">character</span>(<span class="dv">0</span>))<span class="sc">$</span>numeric)),</span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>           Less than HS HS / GED Some college Associate's Bachelor's
+mean_GRPIP         40.8     35.7         35.3        34.3       31.4
+sd_GRPIP           28.6     25.5         25.3        25.0       22.6
+           Graduate degree
+mean_GRPIP            30.8
+sd_GRPIP              23.3</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(edu_rent, <span class="at">cat_var =</span> <span class="st">"education"</span>, <span class="at">num_var =</span> <span class="st">"GRPIP"</span>) <span class="sc">+</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Rent burden by education (NC renters 25+, 2024)"</span>,</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Highest education"</span>, <span class="at">y =</span> <span class="st">"Gross rent as % of household income"</span>) <span class="sc">+</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">25</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="proj1_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>For North Carolina renters aged 25 and older, higher educational attainment is associated with lower rent burden. The weighted mean declined from 40.8% of household income for those with less than a high school education to 30.8% for those with a graduate degree (10% difference). The boxplots shows the same pattern in the medians, with a wider spread among those with less than a high school education.</p>
+<p>However, the distributions overlap considerably, and high rent burdens appear in every education group. This suggests that education alone does not explain the variation. Also, a lower rent burden does not necessarily mean lower rent payments: it could reflect higher household income, lower rent, or both.</p>
+</section>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+<p>The most interesting part of this project was creating the summary and plotting functions, since they turned the data I queried into something easier to understand and explore. This was also my first time implementing a custom class and seeing how R uses it to choose the appropriate method. Adding the <code>"census"</code> class and then calling <code>summary()</code> and <code>plot()</code> made that concept feel much more concrete. Overall, I now have a better understanding of API querying and a toolkit I can reuse.</p>
 
 
 </section>
