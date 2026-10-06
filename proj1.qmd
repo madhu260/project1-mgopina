@@ -4,18 +4,22 @@ author: "Madhu"
 format: html
 ---
 
-## Part 1: Data Processing
-
-# Parsing Variable Values
-
-Write a function to GET() the URL, parse the JSON, and pull out a list of the variables with their values. (BaseR list manipulations is the easiest way to go here!)
+Install and load all necessary libraries, and suppress warnings
 
 ```{r}
+#| warning: false
+
 library(httr)
 library(jsonlite)
 library(tidyverse)
 library(hms)
 ```
+
+# Part 1: Data Processing
+
+### Parsing Variable Values
+
+I wrote a function `obtain_url_info()` to first GET() the URL, parse the JSON, and then pull out a list of the variables with their values
 
 ```{r}
 obtain_url_info <- function(url) {
@@ -39,7 +43,7 @@ obtain_url_info <- function(url) {
 }
 ```
 
-Obtain one list for each year
+Here's how I obtained and stored one list for each year
 
 ```{r}
 result_21 <- obtain_url_info("https://api.census.gov/data/2021/acs/acs1/pums/variables.json")
@@ -48,7 +52,7 @@ result_23 <- obtain_url_info("https://api.census.gov/data/2023/acs/acs1/pums/var
 result_24 <- obtain_url_info("https://api.census.gov/data/2024/acs/acs1/pums/variables.json")
 ```
 
-I saved the lists in an .rds file, and it is in my repo under the data folder
+I then saved the lists in an .rds file, and it is in my repo under the data folder
 
 ```{r}
 
@@ -63,9 +67,10 @@ saveRDS(var_desc, "data/variable_description.rds")
 
 ```
 
-# Parsing API Data
+### Parsing API Data
 
-First I get my regular URL query to work
+First I get my regular URL query to work as a check
+
 ```{r}
 api <- Sys.getenv("API_KEY")
 
@@ -82,7 +87,18 @@ str(response)
 
 ```
 
-This URL query will be converted into a readable format by inserting it into the helper function below
+The next overarching goal is to create a function named `query_API()` that makes it relatively easier to query and read through the census information so we can use in a meaningful manner (as opposed to staring at the long nested api result and relying on pretty print). To do this, I first wrote a skeleton for `query_API()` using comments, and based on that I determined what helper functions I would need:
+
+- convert raw url response to tibble
+
+- fixing data types of the columns as appropriate (be it numeric or factors for categorical)
+
+  - I created a separate helper for handling time data by taking advantage of the `hms` package, and incorporated this within the data types helper
+
+- validating and formatting the specific values for a geographic level, since it needs to be mapped appropriately to a level based on the year as well
+
+This helper is for converting URL queries into a readable format, and I tested to see if it functions as intended using the response from the regular query above.
+
 ```{r}
 #| warning: false
 helper_response_to_tibble <- function(url_response){
@@ -100,7 +116,7 @@ helper_response_to_tibble <- function(url_response){
 helper_response_to_tibble(response)
 ```
 
-This helper function is to fix the data types: either to numeric, or make them a factor with appropriate labels
+The first helper function `helper_parse_time()` is to appropriately convert the given information into timestamps, and the next one `helper_data_types()` is to fix the data types: either to numeric, or make them a factor with appropriate labels.
 
 ```{r}
 helper_parse_time <- function(codes, time_map) {
@@ -154,7 +170,6 @@ helper_parse_time <- function(codes, time_map) {
 
 ```
 
-
 ```{r}
 helper_data_types <- function(df, year) {
 
@@ -193,6 +208,7 @@ helper_data_types <- function(df, year) {
 
 ```
 
+dfskhjafsdjkhf
 
 ```{r}
 helper_geo_value_validate <- function(geo_specific, geo_map) {
@@ -222,8 +238,8 @@ helper_geo_value_validate <- function(geo_specific, geo_map) {
 }
 ```
 
+Lets incorporate our helpers into a function that accomplishes multiple goals
 
-Lets incorporate our helpers into a function that accomplishes multiple goals 
 ```{r}
 query_API <- function(year = 2024, 
                       num_vars = c("AGEP","PWGTP"), cat_vars="SEX", 
@@ -329,11 +345,13 @@ query_API <- function(year = 2024,
 }
 ```
 
-Combining Years
+### Combining Years
+
+I first check to see if the year values are valid (if not why bother wasting computing power). Then I use my `query_API()` function to query for all the given years (same conventions as the single year query apply, and the `...` in the argument takes care of that for user input), add it to an empty tibble one by one, then bind the rows after each addition. I also factorize year here so that it's helpful for the next numeric summarizing part. 
 
 ```{r}
 
-query_mult_years_API <- function(input_years, ...){
+query_API_multi <- function(input_years, ...){
   years <- unique(input_years)
 
   if (length(years) < 1L || !all(years %in% 2021:2024)) {
@@ -356,16 +374,134 @@ query_mult_years_API <- function(input_years, ...){
 }
 ```
 
-```{r}
-combined_data <- query_mult_years_API(
-  input_years = c(2021, 2023, 2024),
-  num_vars = c("GASP", "PWGTP"),
-  cat_vars = c("HHL", "SCHL"),
-  geo_level = "State",
-  geo_specific = "32"
-)
+# Part 2
 
-head(combined_data)
-str(combined_data)
+Helpers
+
+```{r}
+# weighted mean
+weighted_mean <- function(x, w) {
+  keep <- !is.na(x)
+  sum(x[keep] * w[keep]) / sum(w[keep])
+}
+
+# weighted standard deviation
+weighted_sd <- function(x, w) {
+  keep <- !is.na(x)
+  m <- weighted_mean(x, w)
+  sqrt(sum(x[keep]^2 * w[keep]) / sum(w[keep]) - m^2)
+}
+
 ```
 
+```{r}
+library(tidyverse)
+
+
+summary.census <- function(object, num_vars = NULL, cat_vars = NULL) {
+
+  # Drop the census class so the dplyr verbs treat this as a plain tibble
+  class(object) <- setdiff(class(object), "census")
+
+  # Defaults: every numeric column except PWGTP, every factor column
+  if (is.null(num_vars)) {
+    num_vars <- object |>
+      select(where(is.numeric), -PWGTP) |>
+      names()
+  }
+  if (is.null(cat_vars)) {
+    cat_vars <- object |>
+      select(where(is.factor)) |>
+      names()
+  }
+
+  #------------------------------- User Specified -------------------------------
+  # col exists
+  if (!all(c(num_vars, cat_vars) %in% names(object))) {
+    stop("num_vars and cat_vars must be columns of the census tibble")
+  }
+
+  # Numeric: weighted mean and sd
+  num_summary <- object |>
+    summarize(across(all_of(num_vars),
+                     list("mean" = ~ weighted_mean(.x, PWGTP),
+                          "sd" = ~ weighted_sd(.x, PWGTP)),
+                     .names = "{.fn}_{.col}"))
+
+  # Categorical: counts via group_by() and n()
+  cat_summary <- list()
+  for (v in cat_vars) {
+    cat_summary[[v]] <- object |>
+      group_by(.data[[v]]) |>
+      summarize(count = n())
+  }
+  
+  # numeric: flat named list ($mean_AGEP, $sd_AGEP, ...)
+  num_list <- as.list(num_summary)
+
+  # categorical: named count vectors instead of tibbles
+  cat_list <- lapply(cat_summary, function(df) setNames(df$count, as.character(df[[1]])))
+
+  list(numeric = num_list, categorical = cat_list)
+
+}
+
+```
+
+
+```{r}
+# Test:
+dat <- query_API_multi(2023:2024, num_vars = c("AGEP", "JWMNP", "JWAP"),
+                        cat_vars = c("SEX", "SCHL"))
+ summary(dat)
+ summary(dat, num_vars = "AGEP", cat_vars = "year")
+
+```
+
+
+```{r}
+library(tidyverse)
+library(gt)
+
+# Helper: nicely formatted count table for one categorical variable.
+# df is one element of summary(dat)$categorical (first column = the variable,
+# second column = count). Uses only gt functions from the course notes.
+count_table <- function(df, title) {
+  df |>
+    gt() |>
+    tab_header(title = title) |>
+    cols_label(count = "Count") |>
+    sub_missing(columns = everything(), missing_text = "Missing") |>
+    tab_options(table.width = pct(80)) |>
+    opt_stylize(style = 1, color = "blue")
+}
+
+res <- summary(dat)
+
+# Numeric summaries: spanners group each variable's mean and sd
+res$numeric |>
+  mutate(across(everything(), ~ round(.x, 2))) |>
+  gt() |>
+  tab_header(
+    title = "Weighted Numeric Summaries",
+    subtitle = "2023 and 2024 survey years, North Carolina"
+  ) |>
+  cols_label(
+    mean_AGEP = "Mean", sd_AGEP = "SD",
+    mean_JWMNP = "Mean", sd_JWMNP = "SD"
+  ) |>
+  tab_spanner(label = "Age (AGEP)", columns = c(mean_AGEP, sd_AGEP)) |>
+  tab_spanner(label = "Commute Minutes (JWMNP)", columns = c(mean_JWMNP, sd_JWMNP)) |>
+  tab_options(table.width = pct(80)) |>
+  opt_stylize(style = 1, color = "blue")
+
+# Categorical counts
+count_table(res$categorical$SEX, "Counts by Sex")
+count_table(res$categorical$SCHL, "Counts by Educational Attainment")
+count_table(res$categorical$year, "Counts by Survey Year")
+```
+
+
+```{r}
+
+```
