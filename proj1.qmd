@@ -662,7 +662,7 @@ Household gas costs generally increased with rent burden. The average monthly ga
 
 However, the distributions overlap a lot, so people with higher rent burdens do not always have higher gas costs.
 
-### Q4. Education and rent burden, by sex
+### Q4. Education and rent burden
 
 This is a comparison of rent burden across highest level of education for adults 25 and older (so most people have finished school). The `SCHL` factor has many detailed levels, so I look up each person's official code from my saved variable descriptions and collapse the codes into six groups.
 
